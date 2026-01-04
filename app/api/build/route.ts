@@ -1,5 +1,5 @@
+import JSZip from "jszip";
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export const runtime = "nodejs";
@@ -41,22 +41,26 @@ export async function POST(req: Request) {
     );
   }
 
-  const safeTitle = sanitizeTitle(titleRaw);
-  const targetDir = path.join(process.cwd(), "public", safeTitle);
-  await mkdir(targetDir, { recursive: true });
-
-  const tjaPath = path.join(targetDir, `${safeTitle}.tja`);
   const normalizedTja = normalizeOffsetToSeconds(tja);
-  await writeFile(tjaPath, normalizedTja, "utf8");
+  const safeTitle = sanitizeTitle(titleRaw);
+  const zip = new JSZip();
+  zip.file(`${safeTitle}.tja`, normalizedTja);
 
   const audio = formData.get("audio");
   if (audio && audio instanceof File) {
     const originalName = audio.name || "audio.ogg";
     const ext = path.extname(originalName) || ".ogg";
-    const audioPath = path.join(targetDir, `${safeTitle}${ext}`);
+    const audioPath = `${safeTitle}${ext}`;
     const buffer = Buffer.from(await audio.arrayBuffer());
-    await writeFile(audioPath, buffer);
+    zip.file(audioPath, buffer);
   }
 
-  return NextResponse.json({ ok: true, folder: safeTitle });
+  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  return new NextResponse(zipBuffer, {
+    headers: {
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="${safeTitle}.zip"`,
+      "Cache-Control": "no-store"
+    }
+  });
 }

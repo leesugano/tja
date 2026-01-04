@@ -4,10 +4,17 @@ import React from "react";
 import { Download, Triangle } from "lucide-react";
 
 type HeaderBarProps = {
-  onPackage: () => void;
+  onDownload: () => void;
+  downloadState: "idle" | "working" | "error";
+  downloadError: string | null;
 };
 
-export function HeaderBar({ onPackage }: HeaderBarProps) {
+export function HeaderBar({
+  onDownload,
+  downloadState,
+  downloadError
+}: HeaderBarProps) {
+  const buttonLabel = downloadState === "working" ? "Preparing…" : "Download";
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3">
@@ -22,11 +29,18 @@ export function HeaderBar({ onPackage }: HeaderBarProps) {
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-        <button className="button button-primary flex-1 sm:flex-none" onClick={onPackage}>
+        <button
+          className="button button-primary flex-1 sm:flex-none"
+          onClick={onDownload}
+          disabled={downloadState === "working"}
+        >
           <Download className="mr-2 inline h-4 w-4" />
-          Package
+          {buttonLabel}
         </button>
       </div>
+      {downloadError && (
+        <div className="w-full text-[11px] text-salmon-600">{downloadError}</div>
+      )}
     </div>
   );
 }

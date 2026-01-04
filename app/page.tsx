@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, Pause, Play, Sliders } from "lucide-react";
+import { Pause, Play, Sliders } from "lucide-react";
 import { HeaderBar } from "../components/HeaderBar";
 import { LibrarySidebar } from "../components/LibrarySidebar";
 import { CodeEditor } from "../components/CodeEditor";
@@ -9,7 +9,6 @@ import { NotesTimeline } from "../components/NotesTimeline";
 import { PreviewCanvas } from "../components/PreviewCanvas";
 import { MetadataPanel } from "../components/MetadataPanel";
 import { AudioPanel } from "../components/AudioPanel";
-import { PackageModal } from "../components/PackageModal";
 import {
   buildNotesBlock,
   DEFAULT_TJA,
@@ -222,11 +221,10 @@ export default function Home() {
     ]
   );
   const [activeChartId, setActiveChartId] = useState("default");
-  const [showPackageModal, setShowPackageModal] = useState(false);
-  const [packageState, setPackageState] = useState<
-    "idle" | "working" | "done" | "error"
+  const [downloadState, setDownloadState] = useState<
+    "idle" | "working" | "error"
   >("idle");
-  const [packageError, setPackageError] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioFileRef = useRef<File | null>(null);
   const audioUrlRef = useRef<string | null>(null);
@@ -381,9 +379,9 @@ export default function Home() {
     }
   };
 
-  const handlePackage = async () => {
-    setPackageState("working");
-    setPackageError(null);
+  const handleDownload = async () => {
+    setDownloadState("working");
+    setDownloadError(null);
     const rawTitle = parsed.meta.title?.trim() || "Chart";
     const safeTitle = rawTitle.replace(/[\\/]/g, "-").trim() || "Chart";
     const audioFile = audioFileRef.current;
@@ -470,15 +468,25 @@ export default function Home() {
         method: "POST",
         body: formData
       });
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.error || "Build failed");
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Download failed");
       }
-      setPackageState("done");
+      const blob = await response.blob();
+      const downloadName = `${safeTitle}.zip`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = downloadName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      setDownloadState("idle");
     } catch (error) {
-      setPackageState("error");
-      setPackageError(
-        error instanceof Error ? error.message : "Failed to build files."
+      setDownloadState("error");
+      setDownloadError(
+        error instanceof Error ? error.message : "Failed to download files."
       );
     }
   };
@@ -639,11 +647,9 @@ export default function Home() {
   return (
     <div className="app-shell">
       <HeaderBar
-        onPackage={() => {
-          setPackageState("idle");
-          setPackageError(null);
-          setShowPackageModal(true);
-        }}
+        onDownload={handleDownload}
+        downloadState={downloadState}
+        downloadError={downloadError}
       />
 
       <div className="grid gap-4 lg:grid-cols-[220px_1fr_300px]">
@@ -835,42 +841,8 @@ export default function Home() {
             meta={parsed.meta}
             onUpdate={updateMeta}
           />
-          <section className="panel rounded-2xl p-4 sm:p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-semibold text-ink-800">Export</h2>
-                <p className="text-xs text-ink-500">Package generator</p>
-              </div>
-              <button
-                className="button button-primary"
-                onClick={() => {
-                  setPackageState("idle");
-                  setPackageError(null);
-                  setShowPackageModal(true);
-                }}
-              >
-                <Download className="mr-2 inline h-4 w-4" />
-                Build
-              </button>
-            </div>
-            <div className="mt-3 text-xs text-ink-500">
-              Builds files under the public folder for local testing.
-            </div>
-          </section>
         </aside>
       </div>
-
-      {showPackageModal && (
-        <PackageModal
-          title={parsed.meta.title}
-          audioName={audioName}
-          outputPath={`public/${(parsed.meta.title?.trim() || "Chart").replace(/[\\/]/g, "-").trim() || "Chart"}`}
-          status={packageState}
-          error={packageError}
-          onClose={() => setShowPackageModal(false)}
-          onConfirm={() => void handlePackage()}
-        />
-      )}
     </div>
   );
 }
