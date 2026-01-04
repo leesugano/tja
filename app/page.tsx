@@ -523,7 +523,8 @@ export default function Home() {
         }
         const bpm = Number(data.bpm);
         const offsetMs = Number(data.offsetMs);
-        const events = Array.isArray(data.events) ? data.events : [];
+        const events: Array<{ timeSec: number; type: "don" | "katsu" }> =
+          Array.isArray(data.events) ? data.events : [];
         nextAnalysis = {
           bpm: Number.isFinite(bpm) ? bpm : null,
           offsetMs: Number.isFinite(offsetMs) ? offsetMs : 0,
