@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     zip.file(audioPath, buffer);
   }
 
-  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  const zipBuffer = await zip.generateAsync({ type: "uint8array" });
   return new NextResponse(zipBuffer, {
     headers: {
       "Content-Type": "application/zip",
