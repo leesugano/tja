@@ -28,7 +28,7 @@ export function PreviewCanvas({
   isPlaying,
   onJudge
 }: PreviewCanvasProps) {
-  const { ref, rect } = useResizeObserver<HTMLCanvasElement>();
+  const { ref, rect, node } = useResizeObserver<HTMLCanvasElement>();
   const animationRef = useRef<number | null>(null);
   const hitsRef = useRef(new Map<string, JudgeResult>());
   const comboRef = useRef(0);
@@ -67,8 +67,8 @@ export function PreviewCanvas({
   }, []);
 
   const drawFrame = useCallback(() => {
-    if (!ref.current) return;
-    const canvas = ref.current;
+    if (!node) return;
+    const canvas = node;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const width = rect.width;
@@ -176,7 +176,7 @@ export function PreviewCanvas({
     ctx.fillRect(hitX - 7, trackY - 7, 14, 14);
 
     animationRef.current = requestAnimationFrame(drawFrame);
-  }, [audioRef, bpm, notes, offset, rect.height, rect.width, ref]);
+  }, [audioRef, bpm, node, notes, offset, rect.height, rect.width]);
 
   useEffect(() => {
     if (isPlaying) {

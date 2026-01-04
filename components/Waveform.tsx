@@ -8,11 +8,11 @@ type WaveformProps = {
 };
 
 export function Waveform({ audioBuffer }: WaveformProps) {
-  const { ref, rect } = useResizeObserver<HTMLCanvasElement>();
+  const { ref, rect, node } = useResizeObserver<HTMLCanvasElement>();
 
   useEffect(() => {
-    if (!audioBuffer || !ref.current) return;
-    const canvas = ref.current;
+    if (!audioBuffer || !node) return;
+    const canvas = node;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const width = Math.floor(rect.width);
@@ -22,7 +22,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
     const deviceRatio = window.devicePixelRatio || 1;
     canvas.width = width * deviceRatio;
     canvas.height = height * deviceRatio;
-    ctx.scale(deviceRatio, deviceRatio);
+    ctx.setTransform(deviceRatio, 0, 0, deviceRatio, 0, 0);
 
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = "rgba(59, 68, 88, 0.08)";
@@ -31,7 +31,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
     ctx.lineWidth = 1.5;
 
     const channelData = audioBuffer.getChannelData(0);
-    const step = Math.floor(channelData.length / width);
+    const step = Math.max(1, Math.floor(channelData.length / width));
     const middle = height / 2;
     ctx.beginPath();
     for (let x = 0; x < width; x += 1) {
@@ -47,7 +47,7 @@ export function Waveform({ audioBuffer }: WaveformProps) {
       ctx.lineTo(x, middle + max * middle);
     }
     ctx.stroke();
-  }, [audioBuffer, rect.height, rect.width, ref]);
+  }, [audioBuffer, node, rect.height, rect.width]);
 
   if (!audioBuffer) {
     return (

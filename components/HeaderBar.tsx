@@ -17,7 +17,7 @@ export function HeaderBar({ onPackage }: HeaderBarProps) {
         <div>
           <h1 className="text-xl font-semibold text-ink-900">TJA Studio</h1>
           <p className="text-xs text-ink-500">
-            Apple HIG aligned chart editor for Taiko-style rhythm games
+            Pro-grade TJA chart editor for Taiko rhythm games with live preview
           </p>
         </div>
       </div>

@@ -1,12 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useResizeObserver<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
+  const [node, setNode] = useState<T | null>(null);
   const [rect, setRect] = useState({ width: 0, height: 0 });
+  const ref = useCallback((element: T | null) => {
+    setNode(element);
+  }, []);
 
   useEffect(() => {
-    if (!ref.current) return;
-    const element = ref.current;
+    if (!node) return;
+    const element = node;
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
@@ -18,7 +21,7 @@ export function useResizeObserver<T extends HTMLElement>() {
     });
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [node]);
 
-  return { ref, rect };
+  return { ref, rect, node };
 }

@@ -8,7 +8,6 @@ import { CodeEditor } from "../components/CodeEditor";
 import { NotesTimeline } from "../components/NotesTimeline";
 import { PreviewCanvas } from "../components/PreviewCanvas";
 import { MetadataPanel } from "../components/MetadataPanel";
-import { DiagnosticsPanel } from "../components/DiagnosticsPanel";
 import { AudioPanel } from "../components/AudioPanel";
 import { PackageModal } from "../components/PackageModal";
 import {
@@ -784,7 +783,7 @@ export default function Home() {
                 <label className="flex items-center gap-2 text-xs text-ink-500">
                   <span>Difficulty</span>
                   <select
-                    className="input h-8 px-2 py-1"
+                    className="input input-compact"
                     value={previewDifficulty}
                     onChange={(event) => setPreviewDifficulty(event.target.value)}
                   >
@@ -835,7 +834,6 @@ export default function Home() {
             meta={parsed.meta}
             onUpdate={updateMeta}
           />
-          <DiagnosticsPanel diagnostics={parsed} />
           <section className="panel rounded-2xl p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <div>

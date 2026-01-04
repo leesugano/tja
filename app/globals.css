@@ -81,6 +81,12 @@ body {
   outline: none;
 }
 
+.input-compact {
+  padding: 4px 8px;
+  height: 32px;
+  line-height: 1.2;
+}
+
 .input:focus {
   border-color: rgba(47, 133, 247, 0.6);
   box-shadow: 0 0 0 3px rgba(47, 133, 247, 0.15);
