@@ -843,6 +843,17 @@ export default function Home() {
           />
         </aside>
       </div>
+      <footer className="mt-6 text-center text-xs text-ink-500">
+        Desenvolvido com carinho por{" "}
+        <a
+          href="https://leesugano.com"
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-ink-700 hover:text-tide-500"
+        >
+          Lee Sugano
+        </a>
+      </footer>
     </div>
   );
 }
